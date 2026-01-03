@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis-Flow Security Dashboard</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-blue-hover: #2563eb;
+            --status-green: #22c55e;
+            --status-green-bg: #14532d;
+            --status-red: #ef4444;
+            --status-red-bg: #7f1d1d;
+            --border-color: #334155;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .logo-shield {
+            font-size: 2rem;
+            margin-right: 0.75rem;
+            color: var(--accent-blue);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-left: 1rem;
+            padding-top: 0.5rem;
+        }
+
+        /* Main Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .clear-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .clear-btn:hover { color: var(--text-primary); }
+
+        /* Form Elements */
+        label {
+            display: block;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        textarea {
+            width: 100%;
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 1rem;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 120px;
+            margin-bottom: 1.5rem;
+        }
+
+        textarea:focus {
+            outline: 2px solid var(--accent-blue);
+            border-color: transparent;
+        }
+
+        select {
+            width: 100%;
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 0.75rem;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.25rem;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0.85rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-blue-hover);
+        }
+
+        /* Logs Area */
+        .log-container {
+            flex-grow: 1;
+            background-color: #0f172a;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            overflow-y: auto;
+            max-height: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .log-entry {
+            border-radius: 6px;
+            padding: 1rem;
+            border-left: 4px solid;
+            font-size: 0.9rem;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .log-allowed {
+            background-color: rgba(34, 197, 94, 0.1);
+            border-left-color: var(--status-green);
+            color: #dcfce7;
+        }
+
+        .log-blocked {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left-color: var(--status-red);
+            color: #fee2e2;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .log-prompt {
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .log-message {
+            font-weight: 600;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 1.25rem;
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .text-green { color: var(--status-green); }
+        .text-red { color: var(--status-red); }
+
+        /* Mock Code Block */
+        .code-section {
+            margin-top: 2rem;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        pre {
+            background-color: #0f172a;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            color: #e2e8f0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .keyword { color: #c678dd; } /* purple */
+        .string { color: #98c379; } /* green */
+        .function { color: #61afef; } /* blue */
+        .comment { color: #5c6370; font-style: italic; } /* grey */
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="logo-shield">🛡️</div>
+            <div>
+                <h1>Aegis-Flow Security Dashboard</h1>
+                <div class="subtitle">AI-Powered Security Middleware for Threat Detection</div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Security Test Panel</div>
+                </div>
+
+                <label for="userPrompt">User Prompt</label>
+                <textarea id="userPrompt" placeholder="Enter a command for the agent... (e.g., 'wipe the DB', 'select * from users')"></textarea>
+
+                <label for="userRole">Role</label>
+                <select id="userRole">
+                    <option value="Guest">Guest</option>
+                    <option value="Admin">Admin</option>
+                </select>
+
+                <button class="btn-primary" onclick="runSecurityTest()">
+                    <span>🔒</span> Test Security
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Security Log</div>
+                    <button class="clear-btn" onclick="clearLogs()">Clear Log</button>
+                </div>
+                <div class="log-container" id="logContainer">
+                    <div style="text-align:center; color: var(--text-secondary); margin-top: 2rem; font-style: italic;">
+                        System Ready. Awaiting Inputs...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">Total Tests</div>
+                <div class="stat-value" id="totalTests">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Allowed</div>
+                <div class="stat-value text-green" id="totalAllowed">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Blocked</div>
+                <div class="stat-value text-red" id="totalBlocked">0</div>
+            </div>
+        </div>
+
+        <div class="code-section">
+            <div class="card-header">
+                <div class="card-title">Backend Configuration (Firebase Node.js)</div>
+            </div>
+            <pre><code><span class="comment">// Backend Initialization (Server-Side)</span>
+<span class="keyword">var</span> admin = <span class="function">require</span>(<span class="string">"firebase-admin"</span>);
+
+<span class="keyword">var</span> serviceAccount = <span class="function">require</span>(<span class="string">"path/to/serviceAccountKey.json"</span>);
+
+<span class="comment">// Initialize App with Service Account Credentials</span>
+admin.<span class="function">initializeApp</span>({
+  credential: admin.credential.<span class="function">cert</span>(serviceAccount)
+});
+
+<span class="comment">// Note: This code runs on your secure Node.js server. 
+// The dashboard above simulates the client-side interaction with this security layer.</span></code></pre>
+        </div>
+
+    </div>
+
+    <script>
+        // --- State Management ---
+        let stats = {
+            total: 0,
+            allowed: 0,
+            blocked: 0
+        };
+
+        // --- Semantic "Blacklist" for Guests ---
+        // In a real Aegis-Flow, this is handled by Vector Embeddings (Python)
+        // Here we simulate it with a keyword array including synonyms.
+        const FORBIDDEN_WORDS = [
+            "delete", "remove", "wipe", "drop", "clear", 
+            "erase", "destroy", "purge", "truncate", "dump",
+            "exfiltrate", "kill", "eliminate"
+        ];
+
+        function runSecurityTest() {
+            const promptInput = document.getElementById('userPrompt');
+            const roleSelect = document.getElementById('userRole');
+            const logContainer = document.getElementById('logContainer');
+
+            const promptText = promptInput.value.trim();
+            const role = roleSelect.value;
+
+            if (!promptText) {
+                alert("Please enter a prompt first.");
+                return;
+            }
+
+            // 1. Clear "System Ready" message if it's the first log
+            if (stats.total === 0) {
+                logContainer.innerHTML = '';
+            }
+
+            // 2. Logic: Security Check
+            // Admin = Always Allow
+            // Guest = Block if contains forbidden words
+            let isBlocked = false;
+            let blockReason = "";
+
+            if (role === "Admin") {
+                isBlocked = false;
+            } else {
+                // Check for semantic violations (Guest Role)
+                const lowerPrompt = promptText.toLowerCase();
+                const matchedWord = FORBIDDEN_WORDS.find(word => lowerPrompt.includes(word));
+                
+                if (matchedWord) {
+                    isBlocked = true;
+                    blockReason = `Semantic Violation Detected: "${matchedWord}"`;
+                }
+            }
+
+            // 3. Update Stats
+            stats.total++;
+            if (isBlocked) stats.blocked++;
+            else stats.allowed++;
+            updateStatsUI();
+
+            // 4. Create Log Entry
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.createElement('div');
+            
+            if (isBlocked) {
+                logDiv.className = 'log-entry log-blocked';
+                logDiv.innerHTML = `
+                    <div class="log-header">
+                        <span>⛔ BLOCKED</span>
+                        <span class="badge">${role}</span>
+                        <span>${timestamp}</span>
+                    </div>
+                    <div class="log-prompt">Prompt: "${promptText}"</div>
+                    <div class="log-message">${blockReason}</div>
+                    <div style="margin-top:5px; font-size:0.8rem; opacity:0.8;">Stop! Malicious Request</div>
+                `;
+            } else {
+                logDiv.className = 'log-entry log-allowed';
+                logDiv.innerHTML = `
+                    <div class="log-header">
+                        <span>✅ ALLOWED</span>
+                        <span class="badge">${role}</span>
+                        <span>${timestamp}</span>
+                    </div>
+                    <div class="log-prompt">Prompt: "${promptText}"</div>
+                    <div class="log-message">Command Executed</div>
+                `;
+            }
+
+            // Prepend log (newest first)
+            logContainer.insertBefore(logDiv, logContainer.firstChild);
+
+            // Optional: Clear input after send
+            // promptInput.value = '';
+        }
+
+        function updateStatsUI() {
+            document.getElementById('totalTests').textContent = stats.total;
+            document.getElementById('totalAllowed').textContent = stats.allowed;
+            document.getElementById('totalBlocked').textContent = stats.blocked;
+        }
+
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = 
+                '<div style="text-align:center; color: var(--text-secondary); margin-top: 2rem; font-style: italic;">System Ready. Awaiting Inputs...</div>';
+            stats = { total: 0, allowed: 0, blocked: 0 };
+            updateStatsUI();
+        }
+    </script>
+</body>
+</html>
